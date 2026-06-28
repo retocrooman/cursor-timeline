@@ -3,3 +3,19 @@ dist/
 .DS_Store
 *.log
 .env
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.build/
+Package.resolved
+CursorTimeline.app
+
+# Xcode (legacy)

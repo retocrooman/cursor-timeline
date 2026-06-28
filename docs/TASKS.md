@@ -22,25 +22,26 @@
 
 ---
 
-## Phase 0 — プロジェクト基盤
+## Phase 0 — プロジェクト基盤（Clippo 流儀: SwiftPM）
 
-- [ ] Xcode プロジェクト `CursorTimeline` 作成（macOS App, SwiftUI, macOS 14）
-- [ ] SPM で GRDB 追加
-- [ ] フォルダ構成（`App/`, `Features/`, `Core/`）作成
+- [ ] `Package.swift` — macOS 14 executable + GRDB + test target
+- [ ] フォルダ構成 `Sources/CursorTimeline/{App,Features,Core}/`
+- [ ] `Tests/CursorTimelineTests/`
+- [ ] `build-app.sh` — `.app` バンドル化（Dock 表示、`Cursor Timeline` 表示名）
 - [ ] 空の `ContentView` でビルド・実行確認
-- [ ] `CursorTimelineTests` ターゲット追加
 
 ### 受け入れ条件
 
 | 項目 | OK の状態 |
 |------|-----------|
-| ビルド | Xcode で **エラー 0** |
-| 起動 | Cmd+R → **空の macOS ウィンドウ**が出る |
-| 構成 | `App/` `Features/` `Core/` が存在 |
-| 依存 | GRDB が SPM で解決される |
-| テスト | Test ターゲットが走る（中身空でも可） |
+| ビルド | `swift build` **エラー 0** |
+| 起動 | `swift run` または `open CursorTimeline.app` → **ウィンドウ**が出る |
+| 構成 | `Sources/CursorTimeline/App|Features|Core` が存在 |
+| 依存 | GRDB が `Package.swift` で解決される |
+| テスト | `swift test` が pass |
+| .app | `./build-app.sh` → `CursorTimeline.app` が生成される |
 
-**Verify:** Cmd+R で空ウィンドウが起動する
+**Verify:** `swift run` で「Cursor Timeline」ウィンドウが起動する
 
 ---
 
