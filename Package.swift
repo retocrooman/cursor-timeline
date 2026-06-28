@@ -15,13 +15,15 @@ let package = Package(
     targets: [
         .target(
             name: "CursorTimelineCore",
+            dependencies: [
+                .product(name: "GRDB", package: "GRDB.swift"),
+            ],
             path: "Sources/CursorTimeline/Core"
         ),
         .executableTarget(
             name: "CursorTimeline",
             dependencies: [
                 "CursorTimelineCore",
-                .product(name: "GRDB", package: "GRDB.swift"),
             ],
             path: "Sources/CursorTimeline/App"
         ),
