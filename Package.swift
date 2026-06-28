@@ -20,10 +20,16 @@ let package = Package(
             ],
             path: "Sources/CursorTimeline/Core"
         ),
+        .target(
+            name: "CursorTimelineUI",
+            dependencies: ["CursorTimelineCore"],
+            path: "Sources/CursorTimeline/Features"
+        ),
         .executableTarget(
             name: "CursorTimeline",
             dependencies: [
                 "CursorTimelineCore",
+                "CursorTimelineUI",
             ],
             path: "Sources/CursorTimeline/App"
         ),

@@ -35,7 +35,7 @@ public final class TimelineStore {
             loadedComposerIds = []
             await loadWindow()
         } catch {
-            lastError = error.localizedDescription
+            lastError = Self.userMessage(for: error)
         }
     }
 
@@ -77,7 +77,7 @@ public final class TimelineStore {
                 selection = sessions.first { $0.id == selectedID }
             }
         } catch {
-            lastError = error.localizedDescription
+            lastError = Self.userMessage(for: error)
         }
     }
 
@@ -95,7 +95,7 @@ public final class TimelineStore {
                 bubbleCache[sessionID] = fetched
                 loadedComposerIds.insert(sessionID)
             } catch {
-                lastError = error.localizedDescription
+                lastError = Self.userMessage(for: error)
                 return
             }
         }
@@ -121,6 +121,23 @@ public final class TimelineStore {
 
     public var sessionsInWindowCount: Int {
         sessionIndex.filter { window.overlaps(sessionStart: $0.startAt, sessionEnd: $0.endAt) }.count
+    }
+
+    public var showsEmptyState: Bool {
+        !isLoading && lastError == nil && sessions.isEmpty
+    }
+
+    public var showsInitialLoading: Bool {
+        isLoading && sessions.isEmpty && sessionIndex.isEmpty
+    }
+
+    private static func userMessage(for error: Error) -> String {
+        if let localized = error as? LocalizedError,
+           let description = localized.errorDescription,
+           !description.isEmpty {
+            return description
+        }
+        return error.localizedDescription
     }
 
     private func runOnBackground<T: Sendable>(_ work: @Sendable @escaping () throws -> T) async throws -> T {

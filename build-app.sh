@@ -4,6 +4,7 @@ set -euo pipefail
 
 APP_NAME="CursorTimeline"
 DISPLAY_NAME="Cursor Timeline"
+BUILD_NUM="$(date +%Y%m%d%H%M%S)"
 CONFIG="release"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 APP_DIR="$ROOT/$APP_NAME.app"
@@ -37,7 +38,7 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
     <key>CFBundleShortVersionString</key>
     <string>0.1.0</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>${BUILD_NUM}</string>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>NSPrincipalClass</key>

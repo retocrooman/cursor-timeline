@@ -61,3 +61,16 @@ public enum CursorReaderError: Error, Equatable {
     case openFailed
     case invalidJSON
 }
+
+extension CursorReaderError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .databaseNotFound:
+            return "Cursor のデータベースが見つかりません。Cursor を一度起動してから、再読み込み（↻）してください。"
+        case .openFailed:
+            return "データベースを開けませんでした。Cursor を終了してから再度お試しください。"
+        case .invalidJSON:
+            return "Cursor のデータ形式を読み取れませんでした。"
+        }
+    }
+}

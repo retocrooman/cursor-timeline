@@ -1,42 +1,89 @@
 import SwiftUI
 import CursorTimelineCore
+import CursorTimelineUI
 
 struct ContentView: View {
     @State private var store = TimelineStore()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Cursor Timeline")
-                .font(.title2)
+        VStack(spacing: 0) {
+            TimelineToolbar(store: store)
 
-            if store.isLoading {
-                ProgressView("読み込み中…")
-            }
-
-            if let error = store.lastError {
+            if let error = store.lastError, !store.sessions.isEmpty {
                 Text(error)
-                    .foregroundStyle(.red)
                     .font(.caption)
+                    .foregroundStyle(.red)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.red.opacity(0.08))
             }
 
-            Text("Index: \(store.sessionIndex.count) 件")
-            Text("直近3日: \(store.sessions.count) 件（メタ \(store.sessionsInWindowCount) 件）")
+            HSplitView {
+                ZStack {
+                    ThreeDayTimelineView(
+                        days: store.window.days,
+                        sessions: store.sessions,
+                        selectedSessionID: store.selection?.id,
+                        onSelect: { session in
+                            Task { await store.loadPrompts(for: session.id) }
+                        }
+                    )
+                    .frame(minWidth: TimelineMetrics.gutterWidth + TimelineMetrics.dayColumnMinWidth * 3)
+                    .opacity(store.sessions.isEmpty ? 0.35 : 1)
 
-            HStack {
-                Button("←") { Task { await store.goPrev() } }
-                Button("Today") { Task { await store.goToday() } }
-                Button("→") { Task { await store.goNext() } }
-                Button("Refresh") { Task { await store.reload() } }
+                    TimelineStatusOverlay(
+                        isLoading: store.showsInitialLoading,
+                        emptyMessage: store.showsEmptyState ? TimelineEmptyMessages.noSessionsInWindow : nil,
+                        errorMessage: store.lastError.flatMap { error in
+                            store.sessions.isEmpty ? error + "\n\n" + TimelineEmptyMessages.databaseHint : nil
+                        }
+                    )
+                }
+
+                SessionInspectorView(session: store.selection)
             }
+
+            LegendView(sessions: store.sessions)
         }
-        .padding(24)
-        .frame(minWidth: 480, minHeight: 320, alignment: .topLeading)
+        .frame(minWidth: 1100, minHeight: 640)
         .task {
             await store.reload()
         }
     }
 }
 
+public struct TimelinePreviewHost: View {
+    @State private var selection: TimelineSession?
+    private let sessions = TimelinePreviewData.mockSessions()
+    private let days = TimelinePreviewData.mockWindow.days
+
+    public init() {}
+
+    public var body: some View {
+        VStack(spacing: 0) {
+            Text("Cursor Timeline — Preview")
+                .font(.headline)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(.bar)
+
+            HSplitView {
+                ThreeDayTimelineView(
+                    days: days,
+                    sessions: sessions,
+                    selectedSessionID: selection?.id,
+                    onSelect: { selection = $0 }
+                )
+                SessionInspectorView(session: selection)
+            }
+
+            LegendView(sessions: sessions)
+        }
+        .frame(width: 1100, height: 640)
+    }
+}
+
 #Preview {
-    ContentView()
+    TimelinePreviewHost()
 }

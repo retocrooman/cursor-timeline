@@ -133,15 +133,15 @@
 
 ## Phase 4 — SwiftUI（タイムライン UI）
 
-- [ ] `TimeGutterView` — 08:00–22:00
-- [ ] `DayColumnView` — 日ヘッダー + グリッド線
-- [ ] `SessionBlockView` — repo 色、重なり frame、title
-- [ ] `PromptDotView` — model 色 ●、tooltip
-- [ ] `ThreeDayTimelineView` — 3列 + gutter、横スクロール不要（min 280 × 3）
-- [ ] `SessionInspectorView` — repo, 時刻, prompts 一覧
-- [ ] `TimelineToolbar` — ← → Today Refresh
-- [ ] `LegendView` — repo / model 凡例
-- [ ] `ContentView` — `HSplitView` 組み立て
+- [x] `TimeGutterView` — 08:00–22:00
+- [x] `DayColumnView` — 日ヘッダー + グリッド線
+- [x] `SessionBlockView` — repo 色、重なり frame、title
+- [x] `PromptDotView` — model 色 ●、tooltip
+- [x] `ThreeDayTimelineView` — 3列 + gutter、横スクロール不要（min 280 × 3）
+- [x] `SessionInspectorView` — repo, 時刻, prompts 一覧
+- [x] `TimelineToolbar` — ← → Today Refresh
+- [x] `LegendView` — repo / model 凡例
+- [x] `ContentView` — `HSplitView` 組み立て
 
 ### 受け入れ条件
 
@@ -164,11 +164,11 @@
 
 ## Phase 5 — 実データ接続 & 仕上げ
 
-- [ ] TimelineStore を実 Reader に接続
+- [x] TimelineStore を実 Reader に接続
 - [ ] 自分の環境で Fri 重なり・Sun 2列が再現されることを確認
-- [ ] 空状態・読み込み中・DB 不在のエラー UI
-- [ ] README 更新（ビルド手順、データパス、制限事項）
-- [ ] `.gitignore` に `xcuserdata/`, `DerivedData/` 等
+- [x] 空状態・読み込み中・DB 不在のエラー UI
+- [x] README 更新（ビルド手順、データパス、制限事項）
+- [x] `.gitignore` に `xcuserdata/`, `DerivedData/` 等
 
 ### 受け入れ条件
 
