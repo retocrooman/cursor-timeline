@@ -11,13 +11,17 @@ public struct TimelineDataLoader: Sendable {
         self.transcriptReader = AgentTranscriptReader(paths: paths)
     }
 
-    /// ADR-016 段1–3: index 全件 + 指定 ID の bubble / transcript
+    public func fetchUserBubbles(composerIds: [String]) throws -> [RawUserBubble] {
+        try databaseReader.fetchUserBubbles(composerIds: composerIds)
+    }
+
+    /// ADR-016 段1–3: index 全件 + 指定 ID の bubble / transcript（一括ロード用）
     public func loadSessions(
         composerIdsForBubbles: [String],
         includeAllTranscripts: Bool = false
     ) throws -> [TimelineSession] {
-        let index = try databaseReader.fetchSessionIndex()
-        let bubbles = try databaseReader.fetchUserBubbles(composerIds: composerIdsForBubbles)
+        let index = try fetchSessionIndex()
+        let bubbles = try fetchUserBubbles(composerIds: composerIdsForBubbles)
 
         let composerIDs = Set(composerIdsForBubbles)
         let transcripts: [AgentTranscriptSession]
@@ -27,8 +31,7 @@ public struct TimelineDataLoader: Sendable {
             transcripts = try transcriptReader.fetchSessions(for: composerIDs)
         }
 
-        let merged = TimelineMerger.merge(index: index, bubbles: bubbles, transcripts: transcripts)
-        return SessionVisibility.filterDisplayable(merged)
+        return TimelineSessionBuilder.build(index: index, bubbles: bubbles, transcripts: transcripts)
     }
 
     public func fetchSessionIndex() throws -> [SessionMeta] {
