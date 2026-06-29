@@ -11,8 +11,15 @@ public final class TimelineStore {
     public private(set) var isLoading = false
     public private(set) var lastError: String?
 
+    // v0.2: usage CSV reconciliation
+    public private(set) var usageRecords: [UsageRecord] = []
+    public private(set) var promptCostByID: [String: PromptCostEstimate] = [:]
+    public private(set) var usageCSVLabel: String?
+    public private(set) var isReconciling = false
+
     private var bubbleCache: [String: [RawUserBubble]] = [:]
     private let loader: any TimelineLoading
+    private let reconciliationConfig = ReconciliationConfig()
 
     public init(
         loader: any TimelineLoading = TimelineDataLoader(),
@@ -20,6 +27,54 @@ public final class TimelineStore {
     ) {
         self.loader = loader
         self.window = window
+        loadCachedUsageCSV()
+    }
+
+    /// 起動時: 前回インポートした CSV を Application Support から読み込む
+    private func loadCachedUsageCSV() {
+        do {
+            guard let records = try UsageCSVStore.loadCached() else { return }
+            usageRecords = records
+            usageCSVLabel = UsageCSVStore.cachedFilename
+        } catch {
+            lastError = Self.userMessage(for: error)
+        }
+    }
+
+    /// Toolbar「Import CSV…」
+    public func importUsageCSV(from url: URL) async {
+        isReconciling = true
+        lastError = nil
+        defer { isReconciling = false }
+
+        do {
+            let cached = try await runOnBackground {
+                _ = try UsageCSVStore.saveImport(from: url)
+                return try UsageCSVReader.load(from: UsageCSVStore.cacheURL)
+            }
+            usageRecords = cached
+            usageCSVLabel = url.lastPathComponent
+            reconcilePromptCosts()
+        } catch {
+            lastError = Self.userMessage(for: error)
+        }
+    }
+
+    private func reconcilePromptCosts() {
+        guard !usageRecords.isEmpty else {
+            promptCostByID = [:]
+            return
+        }
+        let prompts = sessions.flatMap(\.prompts)
+        let report = UsageReconciler.reconcile(
+            prompts: prompts,
+            usage: usageRecords,
+            config: reconciliationConfig
+        )
+        promptCostByID = Dictionary(
+            report.estimates.map { ($0.promptID, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
     }
 
     /// 段1: index 全件 → 段2–3: 現在ウィンドウ
@@ -76,6 +131,7 @@ public final class TimelineStore {
             if let selectedID = selection?.id {
                 selection = sessions.first { $0.id == selectedID }
             }
+            reconcilePromptCosts()
         } catch {
             lastError = Self.userMessage(for: error)
         }

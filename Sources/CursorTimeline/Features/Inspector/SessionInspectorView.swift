@@ -3,9 +3,11 @@ import CursorTimelineCore
 
 public struct SessionInspectorView: View {
     let session: TimelineSession?
+    let costByPromptID: [String: PromptCostEstimate]
 
-    public init(session: TimelineSession?) {
+    public init(session: TimelineSession?, costByPromptID: [String: PromptCostEstimate] = [:]) {
         self.session = session
+        self.costByPromptID = costByPromptID
     }
 
     public var body: some View {
@@ -82,6 +84,12 @@ public struct SessionInspectorView: View {
                     Text(ModelColorPalette.label(for: prompt.model))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if let estimate = costByPromptID[prompt.id],
+                       let costLabel = PromptCostFormat.label(for: estimate) {
+                        Text(costLabel)
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(estimate.confidence == .range ? .orange : .green)
+                    }
                 }
                 Text(prompt.text)
                     .font(.body)

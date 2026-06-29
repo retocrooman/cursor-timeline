@@ -1,8 +1,10 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import CursorTimelineCore
 
 public struct TimelineToolbar: View {
     @Bindable var store: TimelineStore
+    @State private var showCSVImporter = false
 
     public init(store: TimelineStore) {
         self.store = store
@@ -43,13 +45,30 @@ public struct TimelineToolbar: View {
             }
             .help("再読み込み")
 
+            Divider()
+                .frame(height: 20)
+
+            Button("Import CSV…") {
+                showCSVImporter = true
+            }
+            .help("Team usage CSV をインポートしてプロンプトに $ を突合")
+
+            if let label = store.usageCSVLabel {
+                Text(label)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .frame(maxWidth: 140)
+            }
+
             Spacer()
 
             Text("b\(BuildInfo.bundleVersion)")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
 
-            if store.isLoading {
+            if store.isLoading || store.isReconciling {
                 ProgressView()
                     .controlSize(.small)
             }
@@ -57,7 +76,27 @@ public struct TimelineToolbar: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(.bar)
+        .fileImporter(
+            isPresented: $showCSVImporter,
+            allowedContentTypes: Self.csvImportTypes,
+            allowsMultipleSelection: false
+        ) { result in
+            guard case .success(let urls) = result, let url = urls.first else { return }
+            Task {
+                let accessed = url.startAccessingSecurityScopedResource()
+                defer { if accessed { url.stopAccessingSecurityScopedResource() } }
+                await store.importUsageCSV(from: url)
+            }
+        }
     }
+
+    private static let csvImportTypes: [UTType] = {
+        var types: [UTType] = [.commaSeparatedText, .plainText]
+        if let csv = UTType(filenameExtension: "csv") {
+            types.append(csv)
+        }
+        return types
+    }()
 
     private var dateRangeLabel: String {
         guard let first = store.window.days.first,

@@ -41,7 +41,10 @@ struct ContentView: View {
                     )
                 }
 
-                SessionInspectorView(session: store.selection)
+                SessionInspectorView(
+                    session: store.selection,
+                    costByPromptID: store.promptCostByID
+                )
             }
 
             LegendView(sessions: store.sessions)
